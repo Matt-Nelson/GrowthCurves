@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Growth Curve Fitting</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Growth Curve Fitting">
+  <meta name="author" content="Matt Nelson">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="libraries/widgets/quiz/css/demo.css"></link>
+<link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Growth Curve Fitting</h1>
+    <h2>Understanding trends and predicting outcomes</h2>
+    <p>Matt Nelson<br/>Student</p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Motivation</h2>
+  </hgroup>
+  <article data-timings="">
+    <ol>
+<li>The progression of a child&#39;s weight, height, and head circumference are all important factors that help doctors to diagnose:
+
+<ul>
+<li>Failure to thrive: a condition in which the child doesn&#39;t follow normal growth patterns, which can result in delayed mental and physical development</li>
+<li>Overweight/obese child: a condition in which the child&#39;s Body Mass Index is higher than normal ranges, which increases their risk for diabetes, adult obesity (and the risks that come with it), heart disease, cancer, and a host of other medical ailments</li>
+</ul></li>
+<li>Parents and doctors who are dealing with abnormal growth trends need tools to help them understand how different treatments affect growth trends so that they can adjust their care plans accordingly.</li>
+<li>Parents and doctors also need to have an idea of where the child&#39;s growth will be in the future if they follow their existing patterns so that they can predict whether the current treatment will be sufficient to meet care plan goals.</li>
+</ol>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="personal" style="background:;">
+  <hgroup>
+    <h2>Personal Motivation</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>My daughter was born with Focal Dermal Hypoplasia, or Goltz syndrome. Failure to thrive is common in these children.</li>
+<li>We have tried a number of different treatments to increase her weight gain, but it is difficult to get a feel for what is working because normal variations in measurements make it hard to see the overall trend.</li>
+<li>The doctors give us goals for her to reach but it&#39;s difficult for us to monitor her progress between appointments.</li>
+</ul>
+
+<p><img src="assets/fig/unnamed-chunk-1.png" alt="plot of chunk unnamed-chunk-1"> </p>
+
+<style>
+#personal {
+  background-image:url(./assets/img/Megan.jpg); 
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+</style>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Prevalence</h2>
+  </hgroup>
+  <article data-timings="">
+    
+<div class="quiz quiz-single well ">
+  <p>Is this health issue a concern for many people? How prevalent are failure to thrive and childhood obesity?</p>
+
+<ol>
+<li>30% of children are considered obese in the USA, but only 5% of infants are considered to have failure to thrive</li>
+<li>As both failure to thrive and childhood obesity are extreme situations, estimated prevalence for both is 5% or less</li>
+<li><em>Childhood obesity is estimated to affect 18% of children in the US, while failure to thrive could be anywhere from 1% to 27%</em></li>
+</ol>
+
+  <button class="quiz-submit btn btn-primary">Submit</button>
+  <button class="quiz-toggle-hint btn btn-info">Show Hint</button>
+  <button class="quiz-show-answer btn btn-success">Show Answer</button>
+  <button class="quiz-clear btn btn-danger">Clear</button>
+  
+  <div class="quiz-hint">
+  
+</div>
+<div class="quiz-explanation">
+  
+</div>
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Proposal</h2>
+  </hgroup>
+  <article data-timings="">
+    <ul>
+<li>Create an application (available <a href="http://mattnelson.shinyapps.io/Shiny">here</a>) that allows users to enter their own data, then plot a growth curve and predict a future value</li>
+<li>Allow them to also specify a time frame when they tried a new treatment (such as diet change, medicine, etc.), then show how that affected the curve going forward</li>
+<li>Growth curves are often modeled using a Gompertz curve model:
+\(y(t) = A*e^{-e^{\frac{\mu*e}{A}(\lambda-t)+1}}\)</li>
+</ul>
+
+<pre><code class="r"># fit the mean weights for girls to a Gompertz curve
+library(grofit)
+fit &lt;- gcFitModel(time=train[, 1], data=train[, 2], 
+    control=grofit.control(model=c(&quot;gompertz&quot;), suppress.messages=TRUE))
+test$prediction &lt;- gompertz(test[, 1], A = fit$parameters$A[1], 
+    mu = fit$parameters$mu[1], lambda = fit$parameters$lambda[1])
+rmse &lt;- sqrt(mean((test$prediction - test[, 2])^2))
+rmse
+</code></pre>
+
+<pre><code>## [1] 0.2619
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Motivation'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Personal Motivation'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Prevalence'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Proposal'>
+         4
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  <script src="libraries/widgets/quiz/js/jquery.quiz.js"></script>
+<script src="libraries/widgets/quiz/js/mustache.min.js"></script>
+<script src="libraries/widgets/quiz/js/quiz-app.js"></script>
+
+  <!-- MathJax: Fall back to local if CDN offline but local image fonts are not supported (saves >100MB) -->
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [['$','$'], ['\\(','\\)']],
+        processEscapes: true
+      }
+    });
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <!-- <script src="https://c328740.ssl.cf1.rackcdn.com/mathjax/2.0-latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+  </script> -->
+  <script>window.MathJax || document.write('<script type="text/x-mathjax-config">MathJax.Hub.Config({"HTML-CSS":{imageFont:null}});<\/script><script src="libraries/widgets/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML"><\/script>')
+</script>
+<!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
